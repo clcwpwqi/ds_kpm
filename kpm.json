@@ -1,0 +1,11 @@
+{
+  "id": "droidspace_userns_fix",
+  "name": "DroidSpace UserNS Fix",
+  "version": "1.0",
+  "versionCode": 1,
+  "author": "clcwpwqi",
+  "description": "修复 GKI 6.6 内核下 DroidSpace 的 UserNS 及挂载权限被拦截的问题，完美适配 HyperOS 3 (Android 16)。",
+  "support": [
+    "6.6"
+  ]
+}
