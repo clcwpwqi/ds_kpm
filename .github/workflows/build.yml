@@ -1,0 +1,51 @@
+name: Build DroidSpace KPM
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-kpm:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: 检出当前仓库代码
+      uses: actions/checkout@v4
+
+    - name: 配置编译环境与 Clang 工具链
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential bc bison flex libssl-dev make libc6-dev \
+          crossbuild-essential-arm64 clang lld llvm curl git zip
+
+    - name: 下载 AOSP GKI 6.6 内核源码
+      run: |
+        # 拉取 android15-6.6 分支，兼容 6.6.77
+        git clone --depth=1 -b android15-6.6 https://android.googlesource.com/kernel/common.git gki_source
+        
+    - name: 准备内核编译头文件环境
+      run: |
+        cd gki_source
+        make ARCH=arm64 CC=clang LLVM=1 gki_defconfig
+        make ARCH=arm64 CC=clang LLVM=1 modules_prepare
+        cd ..
+
+    - name: 编译 KPM 模块
+      run: |
+        export KDIR=$(pwd)/gki_source
+        make
+
+    - name: 打包 KPM 文件
+      run: |
+        mkdir -p kpm_output
+        cp droidspace_fix.ko kpm_output/
+        cp kpm.json kpm_output/
+        cd kpm_output
+        zip -r ../DroidSpace_Fix_clcwpwqi.zip ./*
+
+    - name: 上传编译产物
+      uses: actions/upload-artifact@v4
+      with:
+        name: DroidSpace_Fix_KPM
+        path: DroidSpace_Fix_clcwpwqi.zip
